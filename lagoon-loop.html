@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Lagoon Loop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Carter+One&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  /* ---- Lagoon palette (swap your exact tokens here) ---- */
+  :root{
+    --sea:#0d3b42;        /* deep sea — ink */
+    --teal:#0d6b7a;       /* mid lagoon */
+    --aqua:#1f9e8f;       /* shallow green */
+    --foam:#7fc9bd;       /* foam */
+    --sand:#f3efe3;       /* dry sand — page */
+    --shell:#ffffff;      /* card */
+    --coral:#d66d54;      /* warning / the mirage */
+    --ink:#0d3b42;
+    --line:rgba(13,59,66,.12);
+    --good:#1f9e8f; --bad:#d66d54; --warn:#c98a23;
+    --shadow:0 1px 0 rgba(13,59,66,.04), 0 8px 24px rgba(13,59,66,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(127,201,189,.25), transparent 60%),
+      var(--sand);
+    color:var(--ink);
+    font-family:"Atkinson Hyperlegible",system-ui,-apple-system,sans-serif;
+    line-height:1.5; -webkit-text-size-adjust:100%;
+    padding:max(16px,env(safe-area-inset-top)) 16px 64px;
+  }
+  .wrap{max-width:920px;margin:0 auto}
+  header{padding:18px 0 8px}
+  h1{font-family:"Carter One",system-ui,cursive;font-weight:400;color:var(--sea);
+     font-size:clamp(30px,7vw,46px);margin:0;letter-spacing:.5px}
+  .tag{color:var(--teal);font-size:clamp(14px,3.4vw,17px);margin:4px 0 0;max-width:60ch}
+  .premise{background:rgba(214,109,84,.08);border:1px solid rgba(214,109,84,.25);
+     border-radius:12px;padding:12px 14px;margin:14px 0 0;font-size:14px;color:var(--sea)}
+  .premise b{color:var(--coral)}
+
+  .card{background:var(--shell);border:1px solid var(--line);border-radius:16px;
+     padding:16px;margin:16px 0;box-shadow:var(--shadow)}
+  .card h2{font-family:"Carter One",cursive;font-weight:400;color:var(--teal);
+     font-size:19px;margin:0 0 4px}
+  .card .sub{color:rgba(13,59,66,.6);font-size:13px;margin:0 0 12px}
+  .stage{display:inline-block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+     color:var(--teal);background:rgba(31,158,143,.10);border-radius:999px;padding:3px 9px;margin-bottom:8px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  label{display:block;font-size:12px;color:var(--teal);margin:0 0 4px;font-weight:700}
+  input,select{width:100%;font:inherit;font-size:15px;padding:10px 11px;border:1px solid var(--line);
+     border-radius:10px;background:#fff;color:var(--ink);-webkit-appearance:none;min-height:44px}
+  input:focus,select:focus{outline:2px solid var(--aqua);outline-offset:1px;border-color:var(--aqua)}
+
+  .btn{font:inherit;font-weight:700;font-size:15px;border:none;border-radius:12px;
+     padding:13px 18px;cursor:pointer;min-height:48px;transition:transform .04s ease, filter .15s ease}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:linear-gradient(180deg,var(--aqua),var(--teal));color:#fff}
+  .btn.ghost{background:transparent;color:var(--teal);border:1px solid var(--line)}
+  .btn:hover{filter:brightness(1.04)}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:680px){.cols{grid-template-columns:1fr}}
+
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .kv:last-child{border-bottom:none}
+  .kv span{color:rgba(13,59,66,.7)}
+  .kv b{text-align:right}
+  .good{color:var(--good)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+  hr{border:none;border-top:1px solid var(--line);margin:10px 0}
+
+  .banner{border-radius:10px;padding:9px 12px;font-weight:700;font-size:14px;margin:0 0 10px}
+  .banner.pass{background:rgba(31,158,143,.12);color:var(--teal)}
+  .banner.fail{background:rgba(214,109,84,.12);color:var(--coral)}
+
+  .verdict{background:var(--sea);color:#eaf6f3;border-radius:14px;padding:16px 18px;font-size:15px;line-height:1.55}
+  .verdict::before{content:"the honest read";display:block;font-size:11px;letter-spacing:.14em;
+     text-transform:uppercase;color:var(--foam);margin-bottom:6px}
+
+  canvas{width:100%;height:230px;display:block;background:#fff;border-radius:10px;border:1px solid var(--line)}
+  .leg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:rgba(13,59,66,.75);margin:8px 12px 0 0}
+  .leg i{width:14px;height:3px;border-radius:2px;display:inline-block}
+
+  table.rb{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.rb th{text-align:left;color:var(--teal);font-weight:700;padding:6px 6px;border-bottom:1px solid var(--line)}
+  table.rb td{padding:6px 6px;border-bottom:1px dashed var(--line)}
+  .muted{color:rgba(13,59,66,.6);font-size:13.5px}
+  .foot{color:rgba(13,59,66,.55);font-size:12.5px;margin-top:8px}
+  details summary{cursor:pointer;color:var(--teal);font-weight:700;font-size:14px}
+  #results{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Lagoon Loop</h1>
+    <p class="tag">A maker–checker quant loop you can watch overfit in real time. Same architecture the “prints alpha while you sleep” post sells — instrumented so the mirage is visible.</p>
+    <div class="premise">Paper / simulation only. No broker, no real money. The point isn’t to find alpha — it’s to <b>watch the verifier wave through luck</b> and see in-sample Sharpe evaporate once you account for trials, costs, and out-of-sample data.</div>
+  </header>
+
+  <!-- BUILD -->
+  <section class="card">
+    <span class="stage">Stage 1 · build the loop</span>
+    <h2>Data &amp; loop settings</h2>
+    <p class="sub">Synthetic market by regime (deterministic from the seed). “Efficient market = random” is the honest default — real equities are close to it.</p>
+    <div class="grid">
+      <div><label for="regime">Market regime</label>
+        <select id="regime">
+          <option value="random">Efficient market (no edge)</option>
+          <option value="trending">Trending (real momentum edge)</option>
+          <option value="meanrev">Mean-reverting (real reversal edge)</option>
+          <option value="choppy">Choppy / fat tails</option>
+          <option value="crash">Crash-prone</option>
+        </select></div>
+      <div><label for="strat">Generator strategy family</label>
+        <select id="strat">
+          <option value="ma">MA crossover</option>
+          <option value="rsi">RSI reversal</option>
+          <option value="mom">Momentum</option>
+          <option value="mr">Mean reversion</option>
+        </select></div>
+      <div><label for="seed">Seed</label><input id="seed" type="number" value="2024"></div>
+      <div><label for="years">Years of data</label><input id="years" type="number" value="10" step="1" min="2"></div>
+      <div><label for="vol">Annual volatility %</label><input id="vol" type="number" value="16" step="1"></div>
+      <div><label for="candidates">Candidates tested</label><input id="candidates" type="number" value="60" step="10" min="1"></div>
+      <div><label for="cost">Cost per turnover (bps)</label><input id="cost" type="number" value="5" step="1" min="0"></div>
+    </div>
+
+    <h2 style="margin-top:16px">Verifier gates</h2>
+    <p class="sub">The hard rules from the post. The checker applies them to out-of-sample data only.</p>
+    <div class="grid">
+      <div><label for="gSharpe">Min Sharpe</label><input id="gSharpe" type="number" value="1.5" step="0.1"></div>
+      <div><label for="gDD">Max drawdown %</label><input id="gDD" type="number" value="10" step="1"></div>
+      <div><label for="gT">Min t-stat</label><input id="gT" type="number" value="2.0" step="0.1"></div>
+      <div><label for="gTrades">Min trades</label><input id="gTrades" type="number" value="20" step="5"></div>
+    </div>
+
+    <div class="btnrow">
+      <button id="runBtn" class="btn primary">Run the loop</button>
+      <button id="exportBtn" class="btn ghost">Export JSON</button>
+      <label class="btn ghost" style="margin:0">Import JSON<input id="importInput" type="file" accept="application/json" hidden></label>
+      <button id="resetBtn" class="btn ghost">Reset</button>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="cols">
+      <section class="card">
+        <span class="stage">Maker</span>
+        <h2>Generator picked the best of N</h2>
+        <p class="sub">Random search keeps the parameters with the highest <em>in-sample</em> Sharpe. This is the seductive number.</p>
+        <div id="makerOut"></div>
+      </section>
+      <section class="card">
+        <span class="stage">Checker</span>
+        <h2>Verifier graded it out-of-sample</h2>
+        <div id="checkerBanner" class="banner"></div>
+        <div id="checkerOut"></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <span class="stage">The honest ledger</span>
+      <h2>What the gates don’t tell you</h2>
+      <p class="sub">Selection across many trials, cost, and walk-forward reality — the things that turn “PASSED” into noise.</p>
+      <div id="ledgerOut"></div>
+      <div class="verdict" id="verdict" style="margin-top:14px"></div>
+    </section>
+
+    <section class="card">
+      <h2>The mirage, drawn</h2>
+      <p class="sub">All three curves start at 1.0×. The gap between the green in-sample line and the coral walk-forward line is the overfit.</p>
+      <canvas id="eqChart"></canvas>
+      <div id="eqLegend"></div>
+      <h2 style="margin-top:18px">What you’d actually trade</h2>
+      <p class="sub">The honest walk-forward curve, gross vs net of cost, with the 5% kill switch.</p>
+      <canvas id="execChart"></canvas>
+      <div id="execLegend"></div>
+    </section>
+
+    <section class="card">
+      <span class="stage">Living rulebook</span>
+      <h2>“Knowledge compounding,” honestly tracked</h2>
+      <p class="sub">The post says every loss should write a new rule that makes the system smarter. Re-run with more candidates each time and watch what actually happens to the future-facing number.</p>
+      <div id="rulebook"></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Self-tests</h2>
+    <p class="sub">The engine ships with its tests. Run them in your browser the way you do with your other tools.</p>
+    <div id="testOut" class="banner pass" style="display:none"></div>
+    <div class="btnrow" style="margin-top:0">
+      <button id="testBtn" class="btn ghost">Run self-tests</button>
+    </div>
+    <details style="margin-top:12px"><summary>Why this is a simulator, not the daemon in the post</summary>
+      <p class="foot">A browser tab can’t run on a schedule unattended, and it deliberately never touches a broker. The autonomous “while you sleep” version is Stage 2: a Python service on your own always-on machine, wired to a paper-trading API. This stage exists to teach you why that daemon won’t print money before you give it any.</p>
+    </details>
+  </section>
+
+  <p class="foot">Lagoon Loop · single file · offline · localStorage autosave + JSON export · built for iPad.</p>
+</div>
+
+<script>
+// ===== Lagoon Loop — core computational engine =====
+// Pure, deterministic, dependency-free. Tested in node, then embedded in the HTML.
+
+// ---------- PRNG (seeded, deterministic) ----------
+function mulberry32(seed) {
+  let a = seed >>> 0;
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function gaussian(rng) {
+  // Box–Muller
+  let u = 0, v = 0;
+  while (u === 0) u = rng();
+  while (v === 0) v = rng();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+// ---------- Synthetic daily return series by regime ----------
+// vol is annualized; converted to daily. drift is annualized.
+function genReturns(seed, n, regime, volAnnual, driftAnnual) {
+  const rng = mulberry32(seed);
+  const sd = volAnnual / Math.sqrt(252);
+  const mu = driftAnnual / 252;
+  const r = new Array(n);
+  let prev = 0;
+  for (let i = 0; i < n; i++) {
+    let z = gaussian(rng);
+    let ret;
+    switch (regime) {
+      case 'trending': // positive autocorrelation -> real momentum edge exists
+        ret = mu + 0.18 * prev + sd * z;
+        break;
+      case 'meanrev': // negative autocorrelation -> real mean-reversion edge exists
+        ret = mu - 0.22 * prev + sd * z;
+        break;
+      case 'choppy': // fat tails, no autocorrelation
+        if (rng() < 0.05) z *= 3.5;
+        ret = mu + sd * z;
+        break;
+      case 'crash': // occasional large negative jumps
+        ret = mu + sd * z;
+        if (rng() < 0.012) ret -= sd * (6 + 6 * rng());
+        break;
+      case 'random': // efficient market: iid, ~no edge
+      default:
+        ret = mu + sd * z;
+        break;
+    }
+    r[i] = ret;
+    prev = ret;
+  }
+  return r;
+}
+
+function priceFromReturns(returns, start = 100) {
+  const p = new Array(returns.length + 1);
+  p[0] = start;
+  for (let i = 0; i < returns.length; i++) p[i + 1] = p[i] * (1 + returns[i]);
+  return p;
+}
+
+// ---------- Indicators ----------
+function sma(arr, period) {
+  const out = new Array(arr.length).fill(null);
+  let sum = 0;
+  for (let i = 0; i < arr.length; i++) {
+    sum += arr[i];
+    if (i >= period) sum -= arr[i - period];
+    if (i >= period - 1) out[i] = sum / period;
+  }
+  return out;
+}
+
+function rsi(prices, period) {
+  // Wilder's RSI on a price series
+  const out = new Array(prices.length).fill(null);
+  let gain = 0, loss = 0;
+  for (let i = 1; i <= period; i++) {
+    const ch = prices[i] - prices[i - 1];
+    if (ch >= 0) gain += ch; else loss -= ch;
+  }
+  let avgG = gain / period, avgL = loss / period;
+  out[period] = avgL === 0 ? 100 : 100 - 100 / (1 + avgG / avgL);
+  for (let i = period + 1; i < prices.length; i++) {
+    const ch = prices[i] - prices[i - 1];
+    const g = ch > 0 ? ch : 0, l = ch < 0 ? -ch : 0;
+    avgG = (avgG * (period - 1) + g) / period;
+    avgL = (avgL * (period - 1) + l) / period;
+    out[i] = avgL === 0 ? 100 : 100 - 100 / (1 + avgG / avgL);
+  }
+  return out;
+}
+
+// ---------- Strategies: return target position array in {-1,0,1}, indexed to returns ----------
+// positions[i] is the position HELD INTO day i+1 (decided using info up to day i). No lookahead.
+function stratMACross(returns, prices, p) {
+  const f = sma(prices, p.fast), s = sma(prices, p.slow);
+  const pos = new Array(returns.length).fill(0);
+  for (let i = 0; i < returns.length; i++) {
+    const fi = f[i + 1], si = s[i + 1]; // price index is i+1
+    if (fi == null || si == null) { pos[i] = 0; continue; }
+    pos[i] = fi > si ? 1 : -1;
+  }
+  return pos;
+}
+
+function stratRSI(returns, prices, p) {
+  const r = rsi(prices, p.period);
+  const pos = new Array(returns.length).fill(0);
+  let cur = 0;
+  for (let i = 0; i < returns.length; i++) {
+    const ri = r[i + 1];
+    if (ri == null) { pos[i] = 0; continue; }
+    if (ri < p.lower) cur = 1;        // oversold -> long
+    else if (ri > p.upper) cur = -1;  // overbought -> short
+    pos[i] = cur;
+  }
+  return pos;
+}
+
+function stratMomentum(returns, prices, p) {
+  const pos = new Array(returns.length).fill(0);
+  for (let i = 0; i < returns.length; i++) {
+    const j = i - p.lookback;
+    if (j < 0) { pos[i] = 0; continue; }
+    pos[i] = prices[i + 1] > prices[j + 1] ? 1 : -1;
+  }
+  return pos;
+}
+
+function stratMeanRev(returns, prices, p) {
+  // z-score of price vs its SMA; fade extremes
+  const m = sma(prices, p.lookback);
+  const pos = new Array(returns.length).fill(0);
+  for (let i = 0; i < returns.length; i++) {
+    const mi = m[i + 1];
+    if (mi == null || i < p.lookback) { pos[i] = 0; continue; }
+    // rolling std
+    let s = 0, c = 0;
+    for (let k = i + 1 - p.lookback; k <= i; k++) { s += (prices[k + 1] - mi) ** 2; c++; }
+    const sd = Math.sqrt(s / c);
+    if (sd === 0) { pos[i] = 0; continue; }
+    const z = (prices[i + 1] - mi) / sd;
+    if (z > p.z) pos[i] = -1;       // too high -> short
+    else if (z < -p.z) pos[i] = 1;  // too low -> long
+    else pos[i] = 0;
+  }
+  return pos;
+}
+
+const STRATS = {
+  ma: { name: 'MA crossover', fn: stratMACross },
+  rsi: { name: 'RSI reversal', fn: stratRSI },
+  mom: { name: 'Momentum', fn: stratMomentum },
+  mr: { name: 'Mean reversion', fn: stratMeanRev },
+};
+
+// ---------- Backtest ----------
+// costBps charged on |Δposition| (round trip ~ 2x one-way). Returns net daily strat returns + equity.
+function backtest(returns, positions, costBps) {
+  const n = returns.length;
+  const stratRet = new Array(n);
+  let prevPos = 0;
+  const cost = costBps / 10000;
+  for (let i = 0; i < n; i++) {
+    const turnover = Math.abs(positions[i] - prevPos);
+    stratRet[i] = positions[i] * returns[i] - turnover * cost;
+    prevPos = positions[i];
+  }
+  const equity = priceFromReturns(stratRet, 1);
+  return { stratRet, equity };
+}
+
+function countTrades(positions) {
+  let t = 0, prev = 0;
+  for (let i = 0; i < positions.length; i++) { if (positions[i] !== prev) t++; prev = positions[i]; }
+  return t;
+}
+
+// ---------- Statistics ----------
+function mean(a) { let s = 0; for (const x of a) s += x; return s / a.length; }
+function variance(a, ddof = 1) {
+  const m = mean(a); let s = 0;
+  for (const x of a) s += (x - m) ** 2;
+  return s / (a.length - ddof);
+}
+function std(a, ddof = 1) { return Math.sqrt(variance(a, ddof)); }
+
+function sharpeAnnual(dailyRet) {
+  const s = std(dailyRet);
+  if (s === 0) return 0;
+  return (mean(dailyRet) / s) * Math.sqrt(252);
+}
+
+function maxDrawdown(equity) {
+  let peak = equity[0], mdd = 0;
+  for (const e of equity) {
+    if (e > peak) peak = e;
+    const dd = (peak - e) / peak;
+    if (dd > mdd) mdd = dd;
+  }
+  return mdd; // fraction
+}
+
+function skewness(a) {
+  const m = mean(a), s = std(a, 0), n = a.length;
+  if (s === 0) return 0;
+  let acc = 0; for (const x of a) acc += ((x - m) / s) ** 3;
+  return acc / n;
+}
+function kurtosis(a) {
+  // full (non-excess) kurtosis
+  const m = mean(a), s = std(a, 0), n = a.length;
+  if (s === 0) return 3;
+  let acc = 0; for (const x of a) acc += ((x - m) / s) ** 4;
+  return acc / n;
+}
+
+// Newey–West HAC t-stat that mean > 0 (Bartlett kernel)
+function neweyWestT(x, lags) {
+  const n = x.length;
+  const m = mean(x);
+  if (lags == null) lags = Math.max(1, Math.floor(4 * Math.pow(n / 100, 2 / 9)));
+  const d = x.map(v => v - m);
+  let g0 = 0; for (const v of d) g0 += v * v; g0 /= n;
+  let S = g0;
+  for (let k = 1; k <= lags; k++) {
+    let gk = 0;
+    for (let t = k; t < n; t++) gk += d[t] * d[t - k];
+    gk /= n;
+    const w = 1 - k / (lags + 1);
+    S += 2 * w * gk;
+  }
+  const seMean = Math.sqrt(S / n);
+  if (seMean === 0) return 0;
+  return m / seMean;
+}
+
+// ---------- Normal CDF / inverse (for PSR / deflated Sharpe) ----------
+function erf(x) {
+  const t = 1 / (1 + 0.3275911 * Math.abs(x));
+  const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+  return x >= 0 ? y : -y;
+}
+function normCDF(x) { return 0.5 * (1 + erf(x / Math.SQRT2)); }
+function normInv(p) {
+  // Acklam's algorithm
+  const a = [-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02, 1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00];
+  const b = [-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02, 6.680131188771972e+01, -1.328068155288572e+01];
+  const c = [-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00, -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00];
+  const d = [7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00, 3.754408661907416e+00];
+  const pl = 0.02425, ph = 1 - pl;
+  let q, r;
+  if (p < pl) { q = Math.sqrt(-2 * Math.log(p)); return (((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1); }
+  if (p <= ph) { q = p - 0.5; r = q * q; return (((((a[0] * r + a[1]) * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * q / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1); }
+  q = Math.sqrt(-2 * Math.log(1 - p)); return -(((((c[0] * q + c[1]) * q + c[2]) * q + c[3]) * q + c[4]) * q + c[5]) / ((((d[0] * q + d[1]) * q + d[2]) * q + d[3]) * q + 1);
+}
+
+// ---------- Multiple-testing instrumentation ----------
+// Per-test two-sided false-positive rate for |t| > thr (thr in SDs)
+function falsePositiveRate(tThreshold) { return 2 * (1 - normCDF(tThreshold)); }
+function expectedFalsePasses(nTrials, tThreshold) { return nTrials * falsePositiveRate(tThreshold); }
+function bonferroniAlpha(alpha, nTrials) { return alpha / nTrials; }
+
+// Probabilistic Sharpe Ratio: P(true SR > srRefDaily) given observed daily SR, n obs, skew, kurt
+function psr(srDaily, srRefDaily, nObs, skew, kurt) {
+  const denom = Math.sqrt(1 - skew * srDaily + ((kurt - 1) / 4) * srDaily * srDaily);
+  const z = (srDaily - srRefDaily) * Math.sqrt(nObs - 1) / denom;
+  return normCDF(z);
+}
+
+// Expected maximum of nTrials SR estimates (daily units), given cross-trial sd of SR estimates.
+// Bailey & López de Prado approximation.
+function expectedMaxSR(sdSRdaily, nTrials) {
+  if (nTrials < 2) return 0;
+  const gamma = 0.5772156649; // Euler–Mascheroni
+  const a = normInv(1 - 1 / nTrials);
+  const b = normInv(1 - 1 / (nTrials * Math.E));
+  return sdSRdaily * ((1 - gamma) * a + gamma * b);
+}
+
+// Deflated Sharpe Ratio: PSR evaluated against the expected-max-SR threshold from N trials.
+// candidateSRsAnnual: SRs of all candidates tried (the multiple-testing population).
+function deflatedSharpe(bestSRannual, candidateSRsAnnual, nObs, skew, kurt) {
+  const toDaily = (sr) => sr / Math.sqrt(252);
+  const srD = toDaily(bestSRannual);
+  const dailySRs = candidateSRsAnnual.map(toDaily);
+  const sdSR = candidateSRsAnnual.length > 1 ? std(dailySRs) : 0;
+  const srRef = expectedMaxSR(sdSR, candidateSRsAnnual.length);
+  return { dsr: psr(srD, srRef, nObs, skew, kurt), srRefAnnual: srRef * Math.sqrt(252) };
+}
+
+// ---------- Kill switch ----------
+// Walk equity; if drawdown from running peak crosses threshold, flatten (freeze) thereafter.
+function applyKillSwitch(equity, threshold) {
+  const out = equity.slice();
+  let peak = out[0], tripped = -1;
+  for (let i = 0; i < out.length; i++) {
+    if (tripped >= 0) { out[i] = out[tripped]; continue; }
+    if (out[i] > peak) peak = out[i];
+    if ((peak - out[i]) / peak >= threshold) tripped = i;
+  }
+  return { equity: out, trippedAt: tripped };
+}
+
+// ---------- Metric bundle ----------
+function metrics(returns, positions, costBps) {
+  const { stratRet, equity } = backtest(returns, positions, costBps);
+  return {
+    sharpe: sharpeAnnual(stratRet),
+    maxDD: maxDrawdown(equity),
+    t: neweyWestT(stratRet),
+    trades: countTrades(positions),
+    skew: skewness(stratRet),
+    kurt: kurtosis(stratRet),
+    equity, stratRet,
+    totalReturn: equity[equity.length - 1] / equity[0] - 1,
+  };
+}
+
+// ---------- Generator (maker): random search over a strategy family on IN-SAMPLE ----------
+function paramSpace(stratKey, rng) {
+  switch (stratKey) {
+    case 'ma': return { fast: 3 + Math.floor(rng() * 30), slow: 35 + Math.floor(rng() * 160) };
+    case 'rsi': return { period: 5 + Math.floor(rng() * 25), lower: 15 + Math.floor(rng() * 20), upper: 65 + Math.floor(rng() * 20) };
+    case 'mom': return { lookback: 5 + Math.floor(rng() * 120) };
+    case 'mr': return { lookback: 10 + Math.floor(rng() * 60), z: 1 + rng() * 2 };
+    default: return {};
+  }
+}
+
+function generate(returns, prices, stratKey, nCandidates, searchSeed, costBps) {
+  const rng = mulberry32(searchSeed);
+  const fn = STRATS[stratKey].fn;
+  let best = null;
+  const allSR = [];
+  for (let c = 0; c < nCandidates; c++) {
+    const p = paramSpace(stratKey, rng);
+    if (stratKey === 'ma' && p.fast >= p.slow) continue;
+    const pos = fn(returns, prices, p);
+    const m = metrics(returns, pos, costBps);
+    allSR.push(m.sharpe);
+    if (!best || m.sharpe > best.m.sharpe) best = { params: p, m, pos };
+  }
+  return { best, candidateSRs: allSR };
+}
+
+// ---------- Walk-forward (the honest curve) ----------
+// K folds. For each fold f>=1: optimise on folds [0..f-1] (expanding), apply to fold f. Concatenate OOS.
+function walkForward(returns, prices, stratKey, nCandidates, searchSeed, costBps, folds) {
+  const n = returns.length;
+  const foldSize = Math.floor(n / folds);
+  const fn = STRATS[stratKey].fn;
+  const wfRet = [];
+  for (let f = 1; f < folds; f++) {
+    const trainEnd = f * foldSize;
+    const testStart = trainEnd, testEnd = (f === folds - 1) ? n : (f + 1) * foldSize;
+    // optimise on [0, trainEnd)
+    const rng = mulberry32(searchSeed + f * 7919);
+    let best = null;
+    for (let c = 0; c < nCandidates; c++) {
+      const p = paramSpace(stratKey, rng);
+      if (stratKey === 'ma' && p.fast >= p.slow) continue;
+      const posFull = fn(returns, prices, p);
+      const trainPos = posFull.slice(0, trainEnd);
+      const trainRet = returns.slice(0, trainEnd);
+      const m = metrics(trainRet, trainPos, costBps);
+      if (!best || m.sharpe > best.sr) best = { params: p, sr: m.sharpe };
+    }
+    // apply best params to the held-out fold
+    const posFull = fn(returns, prices, best.params);
+    const testPos = posFull.slice(testStart, testEnd);
+    const testRet = returns.slice(testStart, testEnd);
+    const { stratRet } = backtest(testRet, testPos, costBps);
+    for (const r of stratRet) wfRet.push(r);
+  }
+  const equity = priceFromReturns(wfRet, 1);
+  return {
+    stratRet: wfRet, equity,
+    sharpe: sharpeAnnual(wfRet),
+    maxDD: maxDrawdown(equity),
+    t: neweyWestT(wfRet),
+    totalReturn: equity[equity.length - 1] / equity[0] - 1,
+  };
+}
+
+// ---------- Verifier (checker): hard gates ----------
+function verify(oosMetrics, gates) {
+  const checks = [
+    { label: `Sharpe ≥ ${gates.minSharpe}`, pass: oosMetrics.sharpe >= gates.minSharpe, val: oosMetrics.sharpe.toFixed(2) },
+    { label: `Max drawdown ≤ ${(gates.maxDD * 100).toFixed(0)}%`, pass: oosMetrics.maxDD <= gates.maxDD, val: (oosMetrics.maxDD * 100).toFixed(1) + '%' },
+    { label: `t-stat ≥ ${gates.minT} (Newey–West)`, pass: oosMetrics.t >= gates.minT, val: oosMetrics.t.toFixed(2) },
+    { label: `≥ ${gates.minTrades} trades`, pass: oosMetrics.trades >= gates.minTrades, val: String(oosMetrics.trades) },
+  ];
+  return { checks, passed: checks.every(c => c.pass) };
+}
+/* ===================== Canvas charts (dependency-free) ===================== */
+function fitCanvas(cv) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = cv.getBoundingClientRect();
+  cv.width = Math.max(1, Math.floor(rect.width * dpr));
+  cv.height = Math.max(1, Math.floor(rect.height * dpr));
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w: rect.width, h: rect.height };
+}
+
+// series: [{name,color,data:[y...], dashed?:bool}]  — x normalized to [0,1] per series, all start at data[0]
+function drawEquity(cv, series, opts = {}) {
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0, 0, w, h);
+  const padL = 46, padR = 12, padT = 14, padB = 26;
+  const plotW = w - padL - padR, plotH = h - padT - padB;
+  let yMin = Infinity, yMax = -Infinity;
+  for (const s of series) for (const v of s.data) { if (v < yMin) yMin = v; if (v > yMax) yMax = v; }
+  if (!isFinite(yMin)) { yMin = 0.9; yMax = 1.1; }
+  // include break-even 1.0
+  yMin = Math.min(yMin, 1); yMax = Math.max(yMax, 1);
+  const padY = (yMax - yMin) * 0.08 || 0.05; yMin -= padY; yMax += padY;
+  const X = (t) => padL + t * plotW;
+  const Y = (v) => padT + (1 - (v - yMin) / (yMax - yMin)) * plotH;
+
+  // grid + y labels
+  ctx.font = '11px "Atkinson Hyperlegible", system-ui, sans-serif';
+  ctx.fillStyle = 'rgba(13,59,66,0.55)';
+  ctx.strokeStyle = 'rgba(13,59,66,0.10)';
+  ctx.lineWidth = 1;
+  const ticks = 4;
+  for (let i = 0; i <= ticks; i++) {
+    const v = yMin + (i / ticks) * (yMax - yMin);
+    const y = Y(v);
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+    ctx.fillText(v.toFixed(2) + '×', 6, y + 3);
+  }
+  // break-even baseline at 1.0
+  ctx.strokeStyle = 'rgba(214,109,84,0.55)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(padL, Y(1)); ctx.lineTo(w - padR, Y(1)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // series
+  for (const s of series) {
+    if (s.data.length < 2) continue;
+    ctx.strokeStyle = s.color; ctx.lineWidth = s.width || 2;
+    if (s.dashed) ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    for (let i = 0; i < s.data.length; i++) {
+      const t = i / (s.data.length - 1);
+      const x = X(t), y = Y(s.data[i]);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+  // optional vertical marker (kill switch), tFrac in [0,1]
+  if (opts.markerT != null && opts.markerT >= 0) {
+    ctx.strokeStyle = 'rgba(214,109,84,0.9)'; ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(X(opts.markerT), padT); ctx.lineTo(X(opts.markerT), padT + plotH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(214,109,84,0.95)';
+    ctx.fillText('kill switch', X(opts.markerT) + 4, padT + 12);
+  }
+  ctx.fillStyle = 'rgba(13,59,66,0.5)';
+  ctx.fillText(opts.xlabel || 'time (normalized) →', padL, h - 8);
+}
+
+function legend(el, series) {
+  el.innerHTML = series.map(s =>
+    `<span class="leg"><i style="background:${s.color}${s.dashed ? ';outline:1px dashed ' + s.color : ''}"></i>${s.name}</span>`
+  ).join('');
+}
+
+/* ===================== App state + persistence ===================== */
+const LS_KEY = 'lagoon-loop-v1';
+const $ = (id) => document.getElementById(id);
+
+function readConfig() {
+  return {
+    regime: $('regime').value,
+    seed: parseInt($('seed').value, 10) || 1,
+    years: parseFloat($('years').value) || 10,
+    vol: parseFloat($('vol').value) || 16,
+    strat: $('strat').value,
+    candidates: parseInt($('candidates').value, 10) || 60,
+    cost: parseFloat($('cost').value),
+    gates: {
+      minSharpe: parseFloat($('gSharpe').value),
+      maxDD: parseFloat($('gDD').value) / 100,
+      minT: parseFloat($('gT').value),
+      minTrades: parseInt($('gTrades').value, 10),
+    },
+  };
+}
+
+function applyConfig(c) {
+  if (!c) return;
+  $('regime').value = c.regime; $('seed').value = c.seed; $('years').value = c.years;
+  $('vol').value = c.vol; $('strat').value = c.strat; $('candidates').value = c.candidates;
+  $('cost').value = c.cost; $('gSharpe').value = c.gates.minSharpe;
+  $('gDD').value = c.gates.maxDD * 100; $('gT').value = c.gates.minT; $('gTrades').value = c.gates.minTrades;
+}
+
+let RULEBOOK = [];
+let TOTALS = { runs: 0, passes: 0 };
+
+function save() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({ config: readConfig(), rulebook: RULEBOOK, totals: TOTALS }));
+  } catch (e) {}
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+    const obj = JSON.parse(raw);
+    if (obj.config) applyConfig(obj.config);
+    if (Array.isArray(obj.rulebook)) RULEBOOK = obj.rulebook;
+    if (obj.totals && typeof obj.totals.runs === 'number') TOTALS = obj.totals;
+  } catch (e) {}
+}
+
+/* ===================== The loop ===================== */
+function fmtPct(x) { return (x * 100).toFixed(1) + '%'; }
+function verdictClass(ok) { return ok ? 'good' : 'bad'; }
+
+function runLoop() {
+  const c = readConfig();
+  const N = Math.max(500, Math.round(c.years * 252));
+  const returns = genReturns(c.seed, N, c.regime, c.vol, 0);
+  const prices = priceFromReturns(returns);
+  const half = Math.floor(N / 2);
+
+  // IS / OOS split
+  const isRet = returns.slice(0, half);
+  const isPrice = prices.slice(0, half + 1);
+  const oosRet = returns.slice(half);
+  const oosPrice = [prices[half], ...prices.slice(half + 1)];
+
+  // MAKER: random search on in-sample
+  const gen = generate(isRet, isPrice, c.strat, c.candidates, c.seed * 31 + 17, c.cost);
+  const best = gen.best;
+
+  // CHECKER: apply chosen params to OOS, grade against gates
+  const pos = STRATS[c.strat].fn(oosRet, oosPrice, best.params);
+  const oosM = metrics(oosRet, pos, c.cost);
+  const gate = verify(oosM, c.gates);
+
+  // Honest instruments
+  const efp = expectedFalsePasses(c.candidates, 2);
+  const bAlpha = bonferroniAlpha(0.05, c.candidates);
+  const isStrat = metrics(isRet, best.pos, c.cost);
+  const dsr = deflatedSharpe(best.m.sharpe, gen.candidateSRs, isRet.length, isStrat.skew, isStrat.kurt);
+
+  // Walk-forward (honest deployable curve) net + gross
+  const wfNet = walkForward(returns, prices, c.strat, Math.max(20, Math.round(c.candidates / 2)), c.seed * 31 + 17, c.cost, 6);
+  const wfGross = walkForward(returns, prices, c.strat, Math.max(20, Math.round(c.candidates / 2)), c.seed * 31 + 17, 0, 6);
+  const ks = applyKillSwitch(wfNet.equity, 0.05);
+
+  /* ---- render: maker ---- */
+  const pstr = Object.entries(best.params).map(([k, v]) => `${k}=${typeof v === 'number' && !Number.isInteger(v) ? v.toFixed(2) : v}`).join(', ');
+  $('makerOut').innerHTML = `
+    <div class="kv"><span>Strategy chosen</span><b>${STRATS[c.strat].name}</b></div>
+    <div class="kv"><span>Params (best of ${c.candidates})</span><b>${pstr}</b></div>
+    <div class="kv"><span>In-sample Sharpe</span><b class="good">${best.m.sharpe.toFixed(2)}</b></div>
+    <div class="kv"><span>In-sample return</span><b>${fmtPct(isStrat.totalReturn)}</b></div>`;
+
+  /* ---- render: checker ---- */
+  $('checkerBanner').className = 'banner ' + (gate.passed ? 'pass' : 'fail');
+  $('checkerBanner').textContent = gate.passed ? '✓ PASSED verification' : '✕ REJECTED by verifier';
+  $('checkerOut').innerHTML = gate.checks.map(ck =>
+    `<div class="kv"><span>${ck.label}</span><b class="${verdictClass(ck.pass)}">${ck.val} ${ck.pass ? '✓' : '✕'}</b></div>`).join('');
+
+  /* ---- render: honest ledger ---- */
+  let dsrTag, dsrCls;
+  if (dsr.dsr >= 0.95) { dsrTag = 'plausibly real'; dsrCls = 'good'; }
+  else if (dsr.dsr >= 0.5) { dsrTag = 'inconclusive'; dsrCls = 'warn'; }
+  else { dsrTag = 'likely noise'; dsrCls = 'bad'; }
+
+  const honestlyProfitable = wfNet.totalReturn > 0 && wfNet.sharpe > 0;
+  $('ledgerOut').innerHTML = `
+    <div class="kv"><span>Candidates tested</span><b>${c.candidates}</b></div>
+    <div class="kv"><span>Of ${c.candidates} candidates, clear t&gt;2 in-sample by luck</span><b class="warn">≈ ${efp.toFixed(1)}</b></div>
+    <div class="kv"><span>Honest significance bar (Bonferroni α)</span><b>${bAlpha.toExponential(1)}</b></div>
+    <div class="kv"><span>Deflated Sharpe (selection-adjusted)</span><b class="${dsrCls}">${dsr.dsr.toFixed(3)} — ${dsrTag}</b></div>
+    <div class="kv"><span>Sharpe you'd expect from luck alone (N trials)</span><b>${dsr.srRefAnnual.toFixed(2)}</b></div>
+    <hr>
+    <div class="kv"><span>Out-of-sample Sharpe (net)</span><b class="${oosM.sharpe > best.m.sharpe * 0.6 ? 'good' : 'bad'}">${oosM.sharpe.toFixed(2)}</b></div>
+    <div class="kv"><span>Walk-forward Sharpe (net, honest)</span><b class="${wfNet.sharpe > 0.5 ? 'good' : 'bad'}">${wfNet.sharpe.toFixed(2)}</b></div>
+    <div class="kv"><span>Walk-forward return — gross → net</span><b>${fmtPct(wfGross.totalReturn)} → <span class="${honestlyProfitable ? 'good' : 'bad'}">${fmtPct(wfNet.totalReturn)}</span></b></div>
+    <div class="kv"><span>Walk-forward max drawdown</span><b class="${wfNet.maxDD <= c.gates.maxDD ? 'good' : 'bad'}">${fmtPct(wfNet.maxDD)}</b></div>
+    <div class="kv"><span>Kill switch (5%) on honest curve</span><b class="${ks.trippedAt < 0 ? 'good' : 'bad'}">${ks.trippedAt < 0 ? 'never tripped' : 'tripped at day ' + ks.trippedAt}</b></div>`;
+
+  /* ---- the verdict line ---- */
+  const drop = best.m.sharpe - wfNet.sharpe;
+  let verdict;
+  if (c.regime === 'random') {
+    if (gate.passed) {
+      verdict = `There it is — PASSED, on a market with zero edge by construction. Out-of-sample verification didn’t save you because you searched enough times for luck to clear every gate. Deflated Sharpe ${dsr.dsr.toFixed(3)} says it plainly: noise. This is what a “profitable” loop looks like the moment before it bleeds out live.`;
+    } else {
+      verdict = `Good — strict out-of-sample gates rejected this fit. But that’s the trap: the post tells you to run dozens of cycles and reseed after every loss. Each run is another lottery ticket on a market with no edge. Keep clicking Run (and watch the counter below) — a “PASSED” will eventually appear, and it will still be noise.`;
+    }
+  } else if (honestlyProfitable && dsr.dsr >= 0.95 && wfNet.sharpe > 0.5) {
+    verdict = `Here the regime genuinely contains a ${c.strat === 'mom' ? 'momentum' : c.strat === 'mr' ? 'mean-reversion' : ''} pattern, and the honest walk-forward curve survives net of cost (Sharpe ${wfNet.sharpe.toFixed(2)}). The catch: real equity markets sit far closer to the “efficient” regime than this one, where no such pattern is waiting.`;
+  } else {
+    verdict = `In-sample Sharpe ${best.m.sharpe.toFixed(2)} collapses to ${wfNet.sharpe.toFixed(2)} walk-forward net — a ${drop.toFixed(2)} Sharpe haircut that is pure overfitting and cost. Deflated Sharpe ${dsr.dsr.toFixed(3)} (${dsrTag}).`;
+  }
+  $('verdict').textContent = verdict;
+
+  /* ---- charts ---- */
+  const isCurve = isStrat.equity, oosCurve = oosM.equity, wfCurve = wfNet.equity;
+  const eqSeries = [
+    { name: 'In-sample (what the maker sees)', color: '#1f9e8f', data: isCurve, width: 2 },
+    { name: 'Out-of-sample (reality check)', color: '#0d6b7a', data: oosCurve, width: 2 },
+    { name: 'Walk-forward, net (honest)', color: '#d66d54', data: wfCurve, width: 2.5 },
+  ];
+  drawEquity($('eqChart'), eqSeries, { xlabel: 'time (each normalized, all start at 1.0×) →' });
+  legend($('eqLegend'), eqSeries);
+
+  const execSeries = [
+    { name: 'Walk-forward gross', color: '#7fc9bd', data: wfGross.equity, dashed: true, width: 1.5 },
+    { name: 'Walk-forward net of cost', color: '#0d6b7a', data: wfNet.equity, width: 2.5 },
+  ];
+  const markerT = ks.trippedAt >= 0 ? ks.trippedAt / (wfNet.equity.length - 1) : -1;
+  drawEquity($('execChart'), execSeries, { markerT, xlabel: 'what you would actually trade →' });
+  legend($('execLegend'), execSeries);
+
+  /* ---- rulebook log (overfitting tracker) ---- */
+  TOTALS.runs++;
+  if (gate.passed) TOTALS.passes++;
+  RULEBOOK.unshift({
+    t: new Date().toLocaleTimeString(),
+    regime: c.regime, strat: c.strat, N: c.candidates,
+    is: best.m.sharpe, oos: oosM.sharpe, wf: wfNet.sharpe,
+    dsr: dsr.dsr, passed: gate.passed,
+  });
+  RULEBOOK = RULEBOOK.slice(0, 12);
+  renderRulebook();
+  save();
+  $('results').style.display = 'block';
+}
+
+function renderRulebook() {
+  const counter = TOTALS.runs > 0
+    ? `<div class="kv" style="margin-bottom:10px"><span>Loops run this session</span><b>${TOTALS.runs} &nbsp;·&nbsp; cleared the verifier: <span class="${TOTALS.passes > 0 ? 'bad' : 'good'}">${TOTALS.passes}</span></b></div>`
+    : '';
+  if (!RULEBOOK.length) { $('rulebook').innerHTML = counter + '<p class="muted">Run the loop a few times — increase “candidates tested” each run and watch in-sample Sharpe climb while walk-forward stays flat. That gap is the overfitting the post sells as “knowledge compounding.” On a no-edge market, keep going and watch the “cleared the verifier” count creep above zero — those are pure luck.</p>'; return; }
+  const rows = RULEBOOK.map(r => `<tr>
+    <td>${r.t}</td><td>${r.regime}</td><td>${r.strat}</td><td>${r.N}</td>
+    <td class="good">${r.is.toFixed(2)}</td>
+    <td class="${r.wf > 0.5 ? 'good' : 'bad'}">${r.wf.toFixed(2)}</td>
+    <td class="${(r.is - r.wf) > 1 ? 'bad' : ''}">${(r.is - r.wf).toFixed(2)}</td>
+    <td>${r.dsr.toFixed(2)}</td>
+    <td>${r.passed ? '✓' : '✕'}</td></tr>`).join('');
+  $('rulebook').innerHTML = counter + `<table class="rb">
+    <thead><tr><th>time</th><th>regime</th><th>strat</th><th>N tried</th><th>IS Sharpe</th><th>WF net</th><th>overfit gap</th><th>DSR</th><th>gate</th></tr></thead>
+    <tbody>${rows}</tbody></table>`;
+}
+
+/* ===================== Export / import ===================== */
+function exportJSON() {
+  const blob = new Blob([JSON.stringify({ config: readConfig(), rulebook: RULEBOOK, exported: new Date().toISOString() }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'lagoon-loop.json';
+  a.click();
+}
+function importJSON(file) {
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const o = JSON.parse(r.result);
+      if (o.config) applyConfig(o.config);
+      if (Array.isArray(o.rulebook)) { RULEBOOK = o.rulebook; renderRulebook(); }
+      save();
+    } catch (e) { alert('Could not read that file.'); }
+  };
+  r.readAsText(file);
+}
+
+/* ===================== In-page test harness (mirrors node suite) ===================== */
+function runTests() {
+  let pass = 0, fail = 0; const fails = [];
+  const approx = (a, b, tol = 1e-6) => Math.abs(a - b) <= tol;
+  const T = (name, cond) => { if (cond) pass++; else { fail++; fails.push(name); } };
+
+  const r1 = mulberry32(42), r2 = mulberry32(42);
+  T('PRNG deterministic', approx(r1(), r2()));
+  T('mean', approx(mean([1, 2, 3, 4]), 2.5));
+  T('std sample', approx(std([2, 4, 4, 4, 5, 5, 7, 9], 1), Math.sqrt(32 / 7), 1e-9));
+  T('maxDrawdown', approx(maxDrawdown([100, 120, 90, 110, 60, 80]), 0.5, 1e-9));
+  T('normCDF(0)=.5', approx(normCDF(0), 0.5, 1e-6));
+  T('normCDF(1.96)≈.975', approx(normCDF(1.959964), 0.975, 1e-4));
+  T('normInv(.975)≈1.96', approx(normInv(0.975), 1.959964, 1e-4));
+  T('falsePositiveRate(2)≈.0455', approx(falsePositiveRate(2), 0.0455003, 1e-4));
+  T('expectedFalsePasses(100,2)≈4.55', approx(expectedFalsePasses(100, 2), 4.55, 1e-2));
+  T('bonferroni', approx(bonferroniAlpha(0.05, 50), 0.001, 1e-12));
+  T('countTrades', countTrades([0, 1, 1, -1, -1, 0]) === 3);
+
+  (() => {
+    const eq = [1, 1.1, 1.2, 1.1, 1.05, 0.9, 1.3];
+    const ks = applyKillSwitch(eq, 0.1);
+    T('kill switch trips', ks.trippedAt >= 0);
+    T('kill switch freezes', ks.equity[ks.equity.length - 1] === ks.equity[ks.trippedAt]);
+    T('kill switch no false trip', applyKillSwitch([1, 1.01, 1.02], 0.1).trippedAt === -1);
+  })();
+
+  T('expectedMaxSR monotonic', expectedMaxSR(0.05, 100) > expectedMaxSR(0.05, 10));
+  T('PSR increases w/ SR', psr(0.2, 0, 500, 0, 3) > psr(0.1, 0, 500, 0, 3));
+
+  (() => {
+    const r = mulberry32(99); const x = [];
+    for (let i = 0; i < 1000; i++) x.push(gaussian(r) * 0.01);
+    T('NW t small for noise', Math.abs(neweyWestT(x)) < 3);
+    T('NW t large for drift', neweyWestT(x.map(v => v + 0.02)) > 5);
+  })();
+
+  (() => {
+    const N = 2520;
+    const returns = genReturns(2024, N, 'random', 0.16, 0.0);
+    const prices = priceFromReturns(returns);
+    const half = Math.floor(N / 2);
+    const gen = generate(returns.slice(0, half), prices.slice(0, half + 1), 'ma', 60, 777, 5);
+    const oosRet = returns.slice(half), oosPrice = [prices[half], ...prices.slice(half + 1)];
+    const oosM = metrics(oosRet, STRATS.ma.fn(oosRet, oosPrice, gen.best.params), 5);
+    T('random: OOS << IS Sharpe', oosM.sharpe < gen.best.m.sharpe);
+  })();
+
+  (() => {
+    const gates = { minSharpe: 1.5, maxDD: 0.10, minT: 2.0, minTrades: 20 };
+    T('verify passes good', verify({ sharpe: 2, maxDD: 0.05, t: 3, trades: 50 }, gates).passed === true);
+    T('verify fails bad', verify({ sharpe: 1, maxDD: 0.2, t: 1, trades: 5 }, gates).passed === false);
+  })();
+
+  $('testOut').className = 'banner ' + (fail ? 'fail' : 'pass');
+  $('testOut').textContent = fail ? `${pass} passed, ${fail} failed: ${fails.join(', ')}` : `All ${pass} tests passed ✓`;
+}
+
+/* ===================== boot ===================== */
+window.addEventListener('DOMContentLoaded', () => {
+  load();
+  renderRulebook();
+  $('runBtn').addEventListener('click', runLoop);
+  $('testBtn').addEventListener('click', runTests);
+  $('exportBtn').addEventListener('click', exportJSON);
+  $('importInput').addEventListener('change', (e) => { if (e.target.files[0]) importJSON(e.target.files[0]); });
+  $('resetBtn').addEventListener('click', () => { if (confirm('Clear saved config and rulebook?')) { localStorage.removeItem(LS_KEY); RULEBOOK = []; TOTALS = { runs: 0, passes: 0 }; renderRulebook(); } });
+  ['regime', 'seed', 'years', 'vol', 'strat', 'candidates', 'cost', 'gSharpe', 'gDD', 'gT', 'gTrades'].forEach(id => $(id).addEventListener('change', save));
+  window.addEventListener('resize', () => { if ($('results').style.display === 'block') runLoop(); });
+});
+
+</script>
+</body>
+</html>
